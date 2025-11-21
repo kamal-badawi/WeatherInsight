@@ -7,11 +7,20 @@ def get_weather_llm_answer(question: str) -> dict:
     import google.generativeai as genai
     from decouple import config
     from modules.weatherapi_forecast_data import get_weather_forecast
+    from langdetect import detect  # kleines Paket zur Spracherkennung
+
+    # --- Detect language of the question ---
+    try:
+        user_language = detect(question)
+    except:
+        user_language = "en"  # fallback to English
 
     # --- Get weather data (including hourly forecast) ---
-    hours_before= 2
-    hours_after= 3
-    weather_data = get_weather_forecast(question, include_hours=True, hours_before = hours_before, hours_after= hours_after)
+    hours_before = 2
+    hours_after = 3
+    weather_data = get_weather_forecast(
+        question, include_hours=True, hours_before=hours_before, hours_after=hours_after
+    )
     print("weather_data:", weather_data)  # Debugging
 
     if not weather_data or "error" in weather_data:
@@ -25,7 +34,7 @@ create a short, clear, and user-friendly text for the user.
 Weather data: {weather_data}
 
 Guidelines:
-- Detect the language of the user's question ({question}) and respond in the same language as ({question}).
+- Respond in the language of the user's question (detected language: {user_language}).
 - Summarize the most important information: current weather, temperature, and forecast.
 - Focus the description on the time window from {hours_before} hours before to {hours_after} hours after the requested hour.
 - Make the text friendly, readable, and natural.
