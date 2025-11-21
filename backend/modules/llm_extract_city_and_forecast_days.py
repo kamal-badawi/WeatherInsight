@@ -1,7 +1,50 @@
 def get_city_and_forecast_days_for_weatherapi(question: str) -> dict:
     """
-    Extract city, target date, and optional hour from the user question.
-    Returns forecast_days as difference from today + 1 (so WeatherAPI includes the target day).
+    Extracts structured information from a user's natural language question to determine the city,
+    target date, and optional hour for a weather forecast query.
+
+    This function uses a Large Language Model (LLM) to parse relative and absolute dates, times,
+    and city names from a text query, and computes the number of forecast days required for the
+    WeatherAPI to include the target date.
+
+    Key Features:
+    -------------
+    1. Extracts the city:
+        - Converts names to a format compatible with WeatherAPI queries.
+        - Defaults to "Berlin" if the city cannot be determined.
+    2. Extracts the target date:
+        - Handles absolute dates (e.g., "2025-11-23") and relative expressions
+          like "today", "tomorrow", "day after tomorrow", "in 3 days".
+        - Converts relative expressions to an actual date based on the current date.
+    3. Extracts the hour:
+        - If specified, returns the hour as an integer between 0–23.
+        - Defaults to None if no hour is mentioned.
+    4. Computes `forecast_days`:
+        - Calculated as `(target_date - today) + 1` to ensure WeatherAPI includes the target date.
+        - Defaults to 1 if the date cannot be determined.
+
+    Parameters:
+    -----------
+    question : str
+        A natural language string from the user containing information about the city, date,
+        and optionally the hour for which the weather forecast is requested.
+
+    Returns:
+    --------
+    dict
+        A dictionary containing:
+        - "city": str, the city formatted for WeatherAPI (fallback: "Berlin")
+        - "forecast_date": str, the absolute date in "YYYY-MM-DD" format
+        - "hour": int or None, the requested hour (0–23) or None if not specified
+        - "forecast_days": int, number of days from today until the target date (used for WeatherAPI)
+
+    Notes:
+    ------
+    - This function relies on an LLM (Gemini) for accurate extraction and interpretation
+      of natural language date and time expressions.
+    - Relative date expressions are automatically converted to absolute dates.
+    - In case of an error with the LLM or JSON parsing, fallback defaults are provided:
+      city = "Berlin", forecast_days = 1, hour = None, and an optional "error" message.
     """
     import google.generativeai as genai
     from decouple import config

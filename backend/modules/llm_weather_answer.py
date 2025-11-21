@@ -1,7 +1,46 @@
 def get_weather_llm_answer(question: str) -> dict:
     """
-    Uses an LLM to generate a user-friendly weather forecast text.
-    The output language matches the user's question language.
+    Generates a user-friendly, natural language weather forecast response using an LLM (Large Language Model)
+    based on a user's question. The output language matches the detected language of the user's input.
+
+    This function performs the following steps:
+    1. Detects the language of the user's question using a language detection library.
+       - If detection fails, defaults to English.
+    2. Calls `get_weather_forecast` to retrieve structured weather data for the target city and date.
+       - Includes hourly forecasts within a configurable time window around the requested hour.
+       - Handles fallback cases if the city, date, or hour are missing.
+    3. Prompts the Gemini LLM to convert the structured weather data into a short, clear, and natural text
+       response that is readable and user-friendly.
+    4. Returns the generated text.
+
+    Features:
+    ---------
+    - Automatically summarizes current weather, daily forecast, and optionally hourly details.
+    - Adjusts the description to focus on a time window from `hours_before` hours before to `hours_after` hours
+      after the requested hour.
+    - Produces text in the same language as the user's question for better user experience.
+    - Handles errors gracefully, providing fallback messages if the LLM or API fails.
+
+    Parameters:
+    -----------
+    question : str
+        A natural language question or statement from the user that includes information about the desired
+        city, date, and optionally the hour for which weather information is requested.
+
+    Returns:
+    --------
+    dict
+        A dictionary with a single key:
+        - "text": A human-readable weather forecast string. Example:
+          "Hello! The weather in Cologne on 2025-11-22 will be partly cloudy with temperatures between 4°C and 12°C.
+           Around 22:00, it will be clear with 6°C."
+
+    Notes:
+    ------
+    - The function uses the `get_weather_forecast` function internally to retrieve structured weather data.
+    - The LLM prompt ensures that no JSON, code, or structured data is returned—only natural language text.
+    - The hourly forecast is included only if requested and within the defined time window.
+    - If the weather data cannot be retrieved, a default error message is returned.
     """
     import google.generativeai as genai
     from decouple import config
