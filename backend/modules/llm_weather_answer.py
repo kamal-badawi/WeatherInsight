@@ -1,15 +1,14 @@
 def get_weather_llm_answer(question: str) -> dict:
     """
-    Uses the LLM to create a user-friendly text based on weather forecast data.
-    The output language matches the language of the user's question.
+    Uses an LLM to generate a user-friendly weather forecast text.
+    The output language matches the user's question language.
     """
-
     import google.generativeai as genai
     from decouple import config
     from modules.weatherapi_forecast_data import get_weather_forecast
-    from langdetect import detect  # kleines Paket zur Spracherkennung
+    from langdetect import detect
 
-    # --- Detect language of the question ---
+    # --- Detect language of the user's question ---
     try:
         user_language = detect(question)
     except:
@@ -26,7 +25,7 @@ def get_weather_llm_answer(question: str) -> dict:
     if not weather_data or "error" in weather_data:
         return {"text": "Sorry, the weather data could not be retrieved."}
 
-    # --- Prompt for Gemini LLM ---
+    # --- Prepare prompt for Gemini LLM ---
     prompt_text = f"""
 You are a friendly AI assistant. Using the following weather data,
 create a short, clear, and user-friendly text for the user.
@@ -47,13 +46,11 @@ Guidelines:
     model = genai.GenerativeModel("gemini-2.0-flash")
 
     try:
-        # --- Request to the LLM ---
+        # --- Call the LLM ---
         response = model.generate_content(prompt_text)
         result_text = response.text.strip()
 
-        # --- Return structured dictionary ---
         return {"text": result_text}
 
     except Exception as e:
-        # --- Error handling ---
         return {"text": f"Error generating the answer: {str(e)}"}
